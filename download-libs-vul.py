@@ -30,7 +30,7 @@ def download_libs(q):
             try:
                 cmd = "cd " + origin + paths[0] + '/' + paths[1] + f"&&git clone https://foo:bar@{lib}.git"
                 print(cmd)
-                subprocess.check_output(cmd, shell=True, cwd=origin + paths[0] + '/' + paths[1])
+                subprocess.check_output(cmd, shell=True)
             except:
                 k = open('./download_vul_fault_2023_4_8.txt', 'a')
                 k.write(lib + '\n')
