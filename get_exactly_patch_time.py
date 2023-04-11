@@ -47,27 +47,34 @@ def run(base_Dir, vul_base_Dir):
         p.start()
 
 
+with open('./safe_json.json', encoding='utf-8') as f:
+    safe_range = json.load(f)
+with open('./dependency_first.json', encoding='utf-8') as a:
+    dependency = json.load(a)
+
+
 def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
-    with open('./safe_json.json', encoding='utf-8') as f:
-        safe_range = json.load(f)
-    with open('./dependency_first.json', encoding='utf-8') as a:
-        dependency = json.load(a)
     lib = read(q)
     while lib is not None:
         result = []
-        if len(lib.split('/')) > 3:
-            pattern = re.compile('v[0-9]*')
-            if pattern.search(lib.split('/')[-1]) is not None:
-                lib_address = base_Dir + '/'.join(lib.split('/')[:-1])
-            else:
-                lib_address = base_Dir + lib
-        else:
-            lib_address = base_Dir + lib
+        lib_locate = lib
+        lib_address = base_Dir + lib_locate
+        if os.path.exists(base_Dir + lib) is False:
+            temps = []
+            for i in lib.split('/'):
+                pattern = re.compile('/v[0-9]*')
+                if pattern.search(i) is None:
+                    temps.append(i)
+            lib_locate = '/'.join(temps)
+            lib_address = base_Dir + lib_locate
         if os.path.exists(lib_address) is False:
             lib = read(q)
             continue
-        if os.path.exists(lib_address + '/' + 'go.sum') is False:
-            cmd = 'git show head -1'
+        lib_locate = '/'.join(lib_locate.split('/')[3:])
+        if lib_locate != '':
+            lib_locate = lib_locate + '/'
+        if os.path.exists(lib_address + '/' + 'go.sum') is False or os.path.exists(lib_address + '/' + 'go.mod') is False:
+            cmd = 'git show --all head -1'
             try:
                 p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
             except:
@@ -88,7 +95,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                 lib = read(q)
             f = open('./fault_fixing.txt', 'a')
             f.write(
-                lib + ' ' + lib_address + ' not exist go.sum' + ';' + str(commit_date) + '\n')
+                lib + ' ' + lib_address + ' not exist go.sum or go.mod' + ';' + str(commit_date) + '\n')
             f.close()
             lib = read(q)
             continue
@@ -117,16 +124,16 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
         bigVersion = None
         pattern_module = re.compile('/v[0-9]*')
         if pattern_module.search(lib) is not None:
-            bigVersion = lib.split('/')[-1][1:]
+            bigVersion = lib.split('/')[3][1:]
         for vul in dependency[lib].keys():
             current_commit = 0
             after_fix = 0
             after_commit = -1
             after_fix_version = []
-            # after_fix: 0ÊÇ³õÊ¼×´Ì¬£¬1±íÊ¾Í¨¹ı³ıÈ¥Â©¶´ÒÀÀµĞŞ¸´Â©¶´£¬2±íÊ¾Í¨¹ı¸üĞÂÂ©¶´ÒÀÀµĞŞ¸´Â©¶´
+            # after_fix: 0æ˜¯åˆå§‹çŠ¶æ€ï¼Œ1è¡¨ç¤ºé€šè¿‡é™¤å»æ¼æ´ä¾èµ–ä¿®å¤æ¼æ´ï¼Œ2è¡¨ç¤ºé€šè¿‡æ›´æ–°æ¼æ´ä¾èµ–ä¿®å¤æ¼æ´
             for i in range(current_commit, len(git_log_list)):
                 if bigVersion is not None:
-                    cmd = 'git show ' + git_log_list[i][0] + ':go.mod'
+                    cmd = 'git show ' + git_log_list[i][0] + ':' + lib_locate + 'go.mod'
                     try:
                         p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
                     except:
@@ -139,7 +146,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                             curMod = temp[0]
                             break
                     if pattern_module.search(curMod) is not None:
-                        curBigVersion = curMod.split('/')[-1][1:]
+                        curBigVersion = curMod.split('/')[3][1:]
                         if int(curBigVersion) < int(bigVersion):
                             current_commit = current_commit + 1
                             continue
@@ -147,7 +154,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                         current_commit = current_commit + 1
                         continue
                 current_fix_version = []
-                cmd = 'git show ' + git_log_list[i][0] + ':go.sum'
+                cmd = 'git show ' + git_log_list[i][0] + ':' + lib_locate + 'go.sum'
                 try:
                     p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
                 except:
@@ -204,7 +211,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                     except:
                         print(p.splitlines())
                         continue
-                # ½á¹ûÖĞ1ÊÇÒÆ³ıĞŞ¸´£¬2ÊÇ¸üĞÂĞŞ¸´£¬3ÊÇÎ´ĞŞ¸´
+                # ç»“æœä¸­1æ˜¯ç§»é™¤ä¿®å¤ï¼Œ2æ˜¯æ›´æ–°ä¿®å¤ï¼Œ3æ˜¯æœªä¿®å¤
                 if fix == 1 and (after_fix == 1 or after_fix == 2):
                     if len(after_fix_version) > 0:
                         result.append(lib + ';' + str(vul) + ';' + str(git_log_list[after_commit][0]) + ';' + str(
