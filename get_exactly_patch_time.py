@@ -42,7 +42,7 @@ def run(base_Dir, vul_base_Dir):
         needs.add(lib)
     q = Queue()
     write(q, needs)
-    for i in range(1):
+    for i in range(30):
         p = Process(target=thread_get_exactly_patch_time_by_go_sum, args=(q, base_Dir, vul_base_Dir,))
         p.start()
 
@@ -243,7 +243,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
 
 
 if __name__ == '__main__':
-    run('C:/Users/23741/Desktop/baseDir/', 'E:/vul_repos/')
+    run('new_libs_location/', 'vul_repos/')
 
 
 
