@@ -125,7 +125,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
         bigVersion = None
         pattern_module = re.compile('/v(\d*)($|/)')
         if pattern_module.search(lib) is not None:
-            bigVersion = pattern_module.findall(lib)[0]
+            bigVersion = pattern_module.findall(lib)[0][0]
         for vul in dependency[lib].keys():
             current_commit = 0
             after_fix = 0
@@ -147,7 +147,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                             curMod = temp[0]
                             break
                     if pattern_module.search(curMod) is not None:
-                        curBigVersion = pattern_module.findall(curMod)[0]
+                        curBigVersion = pattern_module.findall(curMod)[0][0]
                         if int(curBigVersion) < int(bigVersion):
                             current_commit = current_commit + 1
                             continue
@@ -244,5 +244,6 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
 
 if __name__ == '__main__':
     run('C:/Users/23741/Desktop/baseDir/', 'E:/vul_repos/')
+
 
 
