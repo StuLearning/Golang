@@ -74,11 +74,11 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
         if lib_locate != '':
             lib_locate = lib_locate + '/'
         if os.path.exists(lib_address + '/' + 'go.sum') is False or os.path.exists(lib_address + '/' + 'go.mod') is False:
-            cmd = 'git show --all head -1'
+            cmd = 'git log --all'
             try:
                 p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
             except:
-                print('git show head -1 command has fault', lib_address)
+                print('git show latest has fault', lib_address)
                 lib = read(q)
                 continue
             re_str = re.compile(r'commit(.+?)\\n\\n')
@@ -90,6 +90,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                     if len(sign) == 0:
                         continue
                     commit_date = pd.Timestamp(i.split('\\nDate:')[-1].strip()).tz_convert(tz='Asia/Shanghai')
+                    break
             except Exception as e:
                 print(resp, e)
                 lib = read(q)
@@ -122,9 +123,9 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
             print(resp, e)
             lib = read(q)
         bigVersion = None
-        pattern_module = re.compile('/v[0-9]*')
+        pattern_module = re.compile('/v(\d*)($|/)')
         if pattern_module.search(lib) is not None:
-            bigVersion = lib.split('/')[3][1:]
+            bigVersion = pattern_module.findall(lib)[0]
         for vul in dependency[lib].keys():
             current_commit = 0
             after_fix = 0
@@ -146,7 +147,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                             curMod = temp[0]
                             break
                     if pattern_module.search(curMod) is not None:
-                        curBigVersion = curMod.split('/')[3][1:]
+                        curBigVersion = pattern_module.findall(curMod)[0]
                         if int(curBigVersion) < int(bigVersion):
                             current_commit = current_commit + 1
                             continue
@@ -243,13 +244,5 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
 
 if __name__ == '__main__':
     run('C:/Users/23741/Desktop/baseDir/', 'E:/vul_repos/')
-    # for key in dependency.keys():
-    #     if len(key.split('/')) > 3:
-    #         print(key)
-    # a = 'github.com/go-micro/plugins'
-    # b = '/'.join(a.split('/')[3:])
-    # if b != '':
-    #     b = b + '/'
-    # else:
-    #     print('111')
-    # print(b)
+
+
