@@ -73,7 +73,8 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
         lib_locate = '/'.join(lib_locate.split('/')[3:])
         if lib_locate != '':
             lib_locate = lib_locate + '/'
-        if os.path.exists(lib_address + '/' + 'go.sum') is False or os.path.exists(lib_address + '/' + 'go.mod') is False:
+        if os.path.exists(lib_address + '/' + 'go.sum') is False or os.path.exists(
+                lib_address + '/' + 'go.mod') is False:
             cmd = 'git log --all'
             try:
                 p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
@@ -100,6 +101,14 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
             f.close()
             lib = read(q)
             continue
+        cmd = 'git log --all'
+        try:
+            p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
+        except:
+            print('git show latest has fault', lib_address)
+            lib = read(q)
+            continue
+
         cmd = 'git log --all go.sum'
         try:
             p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
@@ -107,6 +116,22 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
             print('git log go.sum command has fault', lib_address)
             lib = read(q)
             continue
+        re_str = re.compile(r'commit(.+?)\\n\\n')
+        resp = re_str.findall(str(p))
+        latest_commit_id = ''
+        latest_commit_date = ''
+        try:
+            for i in resp:
+                re_str = re.compile(r'[\s\S]*\\nAuthor[\s\S]*\\nDate[\s\S]*')
+                sign = re_str.findall(str(i))
+                if len(sign) == 0:
+                    continue
+                latest_commit_id = i.split('\\n')[0].strip()
+                latest_commit_date = pd.Timestamp(i.split('\\nDate:')[-1].strip()).tz_convert(tz='Asia/Shanghai')
+                break
+        except Exception as e:
+            print(resp, e)
+            lib = read(q)
         re_str = re.compile(r'commit(.+?)\\n\\n')
         resp = re_str.findall(str(p))
         git_log_list = []
@@ -127,11 +152,14 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
         if pattern_module.search(lib) is not None:
             bigVersion = pattern_module.findall(lib)[0][0]
         for vul in dependency[lib].keys():
+            earliest_fix_commit = ''
+            earliest_fix_commit_date = ''
+            earliset_fix_version = ''
             current_commit = 0
             after_fix = 0
             after_commit = -1
             after_fix_version = []
-            # after_fix: 0ÊÇ³õÊ¼×´Ì¬£¬1±íÊ¾Í¨¹ı³ıÈ¥Â©¶´ÒÀÀµĞŞ¸´Â©¶´£¬2±íÊ¾Í¨¹ı¸üĞÂÂ©¶´ÒÀÀµĞŞ¸´Â©¶´
+            # after_fix: 0æ˜¯åˆå§‹çŠ¶æ€ï¼Œ1è¡¨ç¤ºé€šè¿‡é™¤å»æ¼æ´ä¾èµ–ä¿®å¤æ¼æ´ï¼Œ2è¡¨ç¤ºé€šè¿‡æ›´æ–°æ¼æ´ä¾èµ–ä¿®å¤æ¼æ´
             for i in range(current_commit, len(git_log_list)):
                 if bigVersion is not None:
                     cmd = 'git show ' + git_log_list[i][0] + ':' + lib_locate + 'go.mod'
@@ -208,23 +236,30 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                         else:
                             fix = 2
                             current_fix_version.append(version)
+                            earliest_fix_commit = git_log_list[current_commit][0]
+                            earliest_fix_commit_date = git_log_list[current_commit][1]
+                            earliset_fix_version = version
                             continue
                     except:
                         print(p.splitlines())
                         continue
-                # ½á¹ûÖĞ1ÊÇÒÆ³ıĞŞ¸´£¬2ÊÇ¸üĞÂĞŞ¸´£¬3ÊÇÎ´ĞŞ¸´
+                # ç»“æœä¸­1æ˜¯ç§»é™¤ä¿®å¤ï¼Œ2æ˜¯æ›´æ–°ä¿®å¤ï¼Œ3æ˜¯æœªä¿®å¤
                 if fix == 1 and (after_fix == 1 or after_fix == 2):
                     if len(after_fix_version) > 0:
                         result.append(lib + ';' + str(vul) + ';' + str(git_log_list[after_commit][0]) + ';' + str(
-                            git_log_list[after_commit][1]) + ';' + ','.join(after_fix_version) + ';' + str(2))
+                            git_log_list[after_commit][1]) + ';' + ','.join(after_fix_version) + ';' + str(
+                            latest_commit_id) + ';' + str(latest_commit_date) + ';' + str(2))
                     else:
                         result.append(lib + ';' + str(vul) + ';' + str(git_log_list[after_commit][0]) + ';' + str(
-                            git_log_list[after_commit][1]) + ';' + str(1))
+                            git_log_list[after_commit][1]) + ';' + str(latest_commit_id) + ';' + str(
+                            latest_commit_date) + ';' + str(earliest_fix_commit) + ';' + str(
+                            earliset_fix_version) + ';' + str(earliest_fix_commit_date) + ';' + str(1))
                     break
                 else:
                     if after_fix == 0 and fix == 1:
                         result.append(lib + ';' + str(vul) + ';' + str(git_log_list[current_commit][0]) + ';' + str(
-                            git_log_list[current_commit][1]) + ';' + str(3))
+                            git_log_list[current_commit][1]) + ';' + str(latest_commit_id) + ';' + str(
+                            latest_commit_date) + ';' + str(3))
                         break
                     after_commit = after_commit + 1
                     after_fix_version = current_fix_version
