@@ -117,4 +117,3 @@ if __name__ == '__main__':
         f.close()
     # complete_update_vul_libs('C:/Users/23741/Desktop/baseDir')
     complete_update_vul_libs('new_libs_location')
-    complete_update_vul_libs('vul_repos')
