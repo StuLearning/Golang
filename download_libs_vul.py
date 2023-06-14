@@ -44,12 +44,12 @@ def download_libs(q):
 
 
 if __name__ == '__main__':
-    if not os.path.exists('./already_download_vul_2023_4_8.txt'):
+    if not os.path.exists('./already_download_vul_2023_6_13.txt'):
         f = open('./already_download_vul_2023_6_13.txt', 'w')
         f.close()
     if not os.path.exists('./new_libs_location'):
         os.mkdir('./new_libs_location')
-    if not os.path.exists('./download_vul_fault_2023_4_8.txt'):
+    if not os.path.exists('./download_vul_fault_2023_6_13.txt'):
         f = open('./download_vul_fault_2023_6_13.txt', 'w')
         f.close()
     f = open('./need_download_libs_vul.txt', 'r')
