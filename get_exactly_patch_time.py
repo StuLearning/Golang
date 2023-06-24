@@ -23,13 +23,13 @@ def read(q):
 
 
 def run(base_Dir, vul_base_Dir):
-    if not os.path.exists('./fault_fixing.txt'):
+    if not os.path.exists('./fault_fixing_2023_6_13.txt'):
         f = open('./fault_fixing_2023_6_13.txt', 'w')
         f.close()
-    if not os.path.exists('./result_fixing.txt'):
+    if not os.path.exists('./result_fixing_2023_6_13.txt'):
         f = open('./result_fixing_2023_6_13.txt', 'w')
         f.close()
-    if not os.path.exists('./already_run_fixing.txt'):
+    if not os.path.exists('./already_run_fixing_2023_6_13.txt'):
         f = open('./already_run_fixing_2023_6_13.txt', 'w')
         f.close()
     with open('./dependency_first.json', encoding='utf-8') as a:
@@ -161,7 +161,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
             after_fix = 0
             after_commit = -1
             after_fix_version = []
-            # after_fix: 0ÊÇ³õÊ¼×´Ì¬£¬1±íÊ¾Í¨¹ı³ıÈ¥Â©¶´ÒÀÀµĞŞ¸´Â©¶´£¬2±íÊ¾Í¨¹ı¸üĞÂÂ©¶´ÒÀÀµĞŞ¸´Â©¶´
+            # after_fix: 0æ˜¯åˆå§‹çŠ¶æ€ï¼Œ1è¡¨ç¤ºé€šè¿‡é™¤å»æ¼æ´ä¾èµ–ä¿®å¤æ¼æ´ï¼Œ2è¡¨ç¤ºé€šè¿‡æ›´æ–°æ¼æ´ä¾èµ–ä¿®å¤æ¼æ´
             for i in range(current_commit, len(git_log_list)):
                 if bigVersion is not None:
                     cmd = 'git show ' + git_log_list[i][0] + ':' + lib_locate + 'go.mod'
@@ -243,7 +243,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                     except:
                         print(cmd, p.splitlines())
                         continue
-                # ½á¹ûÖĞ1ÊÇÒÆ³ıĞŞ¸´£¬2ÊÇ¸üĞÂĞŞ¸´£¬3ÊÇÎ´ĞŞ¸´
+                # ç»“æœä¸­1æ˜¯ç§»é™¤ä¿®å¤ï¼Œ2æ˜¯æ›´æ–°ä¿®å¤ï¼Œ3æ˜¯æœªä¿®å¤
                 if fix == 1 and (after_fix == 1 or after_fix == 2):
                     if len(after_fix_version) > 0:
                         result.append(lib + ';' + str(vul) + ';' + str(git_log_list[after_commit][0]) + ';' + str(
