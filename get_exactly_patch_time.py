@@ -84,7 +84,6 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
             try:
                 p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
             except:
-                print('git show latest has fault', lib_address)
                 f = open('./already_run_fixing_2023_6_13.txt', 'a')
                 f.write(lib + '\n')
                 f.close()
@@ -101,7 +100,6 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                     commit_date = pd.Timestamp(i.split('\\nDate:')[-1].strip()).tz_convert(tz='Asia/Shanghai')
                     break
             except Exception as e:
-                print(cmd, resp, e)
                 f = open('./already_run_fixing_2023_6_13.txt', 'a')
                 f.write(lib + '\n')
                 f.close()
@@ -119,7 +117,6 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
         try:
             p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
         except:
-            print('git show latest has fault', lib_address)
             f = open('./already_run_fixing_2023_6_13.txt', 'a')
             f.write(lib + '\n')
             f.close()
@@ -130,7 +127,6 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
         try:
             p = subprocess.check_output(cmd, shell=True, cwd=lib_address)
         except:
-            print('git log go.sum command has fault', lib_address)
             f = open('./already_run_fixing_2023_6_13.txt', 'a')
             f.write(lib + '\n')
             f.close()
@@ -150,7 +146,6 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                 latest_commit_date = pd.Timestamp(i.split('\\nDate:')[-1].strip()).tz_convert(tz='Asia/Shanghai')
                 break
         except Exception as e:
-            print(cmd, resp, e)
             f = open('./already_run_fixing_2023_6_13.txt', 'a')
             f.write(lib + '\n')
             f.close()
@@ -168,7 +163,6 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                 commit_date = pd.Timestamp(i.split('\\nDate:')[-1].strip()).tz_convert(tz='Asia/Shanghai')
                 git_log_list.append([commit_id, commit_date])
         except Exception as e:
-            print(cmd, resp, e)
             f = open('./already_run_fixing_2023_6_13.txt', 'a')
             f.write(lib + '\n')
             f.close()
@@ -185,7 +179,7 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
             after_fix = 0
             after_commit = -1
             after_fix_version = []
-            # after_fix: 0ÊÇ³õÊ¼×´Ì¬£¬1±íÊ¾Í¨¹ı³ıÈ¥Â©¶´ÒÀÀµĞŞ¸´Â©¶´£¬2±íÊ¾Í¨¹ı¸üĞÂÂ©¶´ÒÀÀµĞŞ¸´Â©¶´
+            # after_fix: 0æ˜¯åˆå§‹çŠ¶æ€ï¼Œ1è¡¨ç¤ºé€šè¿‡é™¤å»æ¼æ´ä¾èµ–ä¿®å¤æ¼æ´ï¼Œ2è¡¨ç¤ºé€šè¿‡æ›´æ–°æ¼æ´ä¾èµ–ä¿®å¤æ¼æ´
             for i in range(current_commit, len(git_log_list)):
                 if bigVersion is not None:
                     cmd = 'git show ' + git_log_list[i][0] + ':' + lib_locate + 'go.mod'
@@ -244,7 +238,6 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                     try:
                         p = subprocess.check_output(cmd, shell=True, cwd=vul_lib_address)
                     except:
-                        print(vul_lib_module, vul_lib_commits_module, cmd_version, 'not tag')
                         f = open('./fault_fixing_2023_6_13.txt', 'a')
                         f.write(
                             vul + ' ' + vul_lib_commits_module + ' ' + vul_lib_module + ' vul_lib not tag\n')
@@ -265,9 +258,8 @@ def thread_get_exactly_patch_time_by_go_sum(q, base_Dir, vul_base_Dir):
                             earliset_fix_version = version
                             continue
                     except:
-                        print(cmd, p.splitlines())
                         continue
-                # ½á¹ûÖĞ1ÊÇÒÆ³ıĞŞ¸´£¬2ÊÇ¸üĞÂĞŞ¸´£¬3ÊÇÎ´ĞŞ¸´
+                # ç»“æœä¸­1æ˜¯ç§»é™¤ä¿®å¤ï¼Œ2æ˜¯æ›´æ–°ä¿®å¤ï¼Œ3æ˜¯æœªä¿®å¤
                 if fix == 1 and (after_fix == 1 or after_fix == 2):
                     if len(after_fix_version) > 0:
                         result.append(lib + ';' + str(vul) + ';' + str(git_log_list[after_commit][0]) + ';' + str(
